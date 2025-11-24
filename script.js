@@ -1,21 +1,20 @@
-// =============================================
+// ============================================
 // CONFIG
-// =============================================
-const API_BASE = "https://mindsweep-backend-1033236042576.asia-south1.run.app";
+// ============================================
+const API_BASE = "YOUR_BACKEND_URL_HERE"; // <-- replace with Cloud Run URL
+const HISTORY_KEY = "mindsweep_history_v1";
 
-// =============================================
-// PAGE ROUTING
-// =============================================
 document.addEventListener("DOMContentLoaded", () => {
   const page = document.body.dataset.page;
 
   if (page === "home") initHomePage();
-  if (page === "history") loadFirestoreHistory();
+  if (page === "history") initHistoryPage();
+  initTheme();
 });
 
-// =============================================
-// HOME PAGE LOGIC
-// =============================================
+// ============================================
+// HOME PAGE
+// ============================================
 function initHomePage() {
   const clarityBtn = document.getElementById("clarityBtn");
   const clearBtn = document.getElementById("clearBtn");
@@ -24,187 +23,119 @@ function initHomePage() {
   clarityBtn?.addEventListener("click", getClarity);
   clearBtn?.addEventListener("click", clearOutput);
 
-  chips.forEach((chip) =>
+  chips.forEach(chip => {
     chip.addEventListener("click", () => {
-      const textarea = document.getElementById("userInput");
-      if (textarea) {
-        textarea.value = chip.dataset.prompt || "";
-        textarea.focus();
-      }
-    })
-  );
+      document.getElementById("userInput").value = chip.dataset.prompt;
+    });
+  });
 }
 
 function clearOutput() {
-  const textarea = document.getElementById("userInput");
-  const output = document.getElementById("output");
-  const outputSection = document.getElementById("outputSection");
-
-  if (textarea) textarea.value = "";
-  if (output) output.innerHTML = "";
-  if (outputSection) outputSection.classList.add("hidden");
+  document.getElementById("userInput").value = "";
+  document.getElementById("output").innerHTML = "";
+  document.getElementById("outputSection").classList.add("hidden");
 }
 
-// =============================================
-// FETCH CLARITY FROM BACKEND
-// =============================================
+// ============================================
+// GET CLARITY
+// ============================================
 async function getClarity() {
-  const textarea = document.getElementById("userInput");
+  const message = document.getElementById("userInput").value.trim();
+  if (!message) return toast("Please type something.");
+
   const loader = document.getElementById("loader");
+  loader.classList.remove("hidden");
+
   const outputSection = document.getElementById("outputSection");
   const output = document.getElementById("output");
+  const copyBtn = document.getElementById("copyBtn");
 
-  if (!textarea || !loader || !outputSection || !output) return;
-
-  const message = textarea.value.trim();
-  if (!message) return showToast("Please type what you're feeling first", "error");
-
-  loader.classList.remove("hidden");
   outputSection.classList.add("hidden");
   output.innerHTML = "";
+  copyBtn.classList.add("hidden");
 
   try {
     const res = await fetch(`${API_BASE}/mindsweep`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify({ message }),
     });
 
     const data = await res.json();
+    const text = data.clarity || "No response from server.";
 
-    if (data.clarity) {
-      output.innerHTML = formatClarityText(data.clarity);
-      outputSection.classList.remove("hidden");
-    } else {
-      output.innerHTML =
-        `<strong>Something went wrong.</strong><br><span style="color:#aaa;">${escapeHtml(
-          data.error || "Unknown Error"
-        )}</span>`;
-      outputSection.classList.remove("hidden");
-    }
-  } catch (err) {
-    console.error(err);
-    output.innerHTML =
-      "<strong>Network Error.</strong><br><span style='color:#aaa;'>Please try again later.</span>";
+    const formatted = formatClarity(text);
+    output.innerHTML = formatted;
     outputSection.classList.remove("hidden");
-  } finally {
-    loader.classList.add("hidden");
+    output.classList.add("fade-in");
+
+    copyBtn.classList.remove("hidden");
+    copyBtn.onclick = () => copyToClipboard(text);
+
+    saveToHistory({ message, clarity: text, createdAt: new Date().toISOString() });
+
+  } catch (e) {
+    toast("Network error.");
   }
+
+  loader.classList.add("hidden");
 }
 
-// =============================================
-// FORMATTING OUTPUT TEXT
-// =============================================
-function formatClarityText(text) {
-  let safe = escapeHtml(text);
-
-  // **bold**
-  safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-
-  // 1) → bold heading
-  safe = safe.replace(/(\d\)\s)/g, "<br><br><strong>$1</strong>");
-
-  // \n → <br>
-  safe = safe.replace(/\n/g, "<br>");
-
-  return safe;
+// Bold + line breaks
+function formatClarity(str) {
+  let t = escapeHtml(str);
+  t = t.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  t = t.replace(/(\d\)\s)/g, "<br><br><strong>$1</strong>");
+  t = t.replace(/\n/g, "<br>");
+  return t;
 }
 
-// =============================================
-// FIRESTORE HISTORY FETCH
-// =============================================
-async function loadFirestoreHistory() {
+// ============================================
+// COPY BUTTON
+// ============================================
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    toast("Copied!");
+  });
+}
+
+// ============================================
+// HISTORY PAGE
+// ============================================
+function saveToHistory(entry) {
+  const items = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  items.unshift(entry);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 20)));
+}
+
+function initHistoryPage() {
   const list = document.getElementById("historyList");
-  if (!list) return;
+  const items = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
 
-  list.innerHTML = `<p class="loading-text">Loading history…</p>`;
-
-  try {
-    const res = await fetch(`${API_BASE}/history`);
-    const data = await res.json();
-
-    if (!data.history || data.history.length === 0) {
-      list.innerHTML =
-        "<p style='color:#6b7280;font-size:0.9rem;'>No history found.</p>";
-      return;
-    }
-
-    list.innerHTML = "";
-
-    data.history.forEach((item) => {
-      const div = document.createElement("div");
-      div.className = "history-item";
-
-      const date = new Date(item.timestamp);
-      const dateStr = date.toLocaleString(undefined, {
-        day: "2-digit",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-
-      div.innerHTML = `
-        <div class="history-item-header">
-          <span>${dateStr}</span>
-          <span class="history-item-tag">MindSweep</span>
-        </div>
-
-        <div class="history-item-message">
-          ${escapeHtml(item.message).slice(0, 160)}${
-        item.message.length > 160 ? "..." : ""
-      }
-        </div>
-
-        <div class="history-item-clarity">
-          ${escapeHtml(item.clarity).slice(0, 250)}...
-        </div>
-      `;
-
-      list.appendChild(div);
-    });
-  } catch (err) {
-    console.error(err);
-    list.innerHTML =
-      "<p style='color:red;font-size:0.9rem;'>Failed to load history.</p>";
+  if (!items.length) {
+    list.innerHTML = "<p>No history yet.</p>";
+    return;
   }
+
+  list.innerHTML = "";
+  items.forEach(i => {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `
+      <strong>${i.message.slice(0,120)}...</strong>
+      <div class="small">${new Date(i.createdAt).toLocaleString()}</div>
+    `;
+    list.appendChild(div);
+  });
 }
 
-// =============================================
-// HELPERS
-// =============================================
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-// ===============================
-// TOAST NOTIFICATION SYSTEM
-// ===============================
-function showToast(message, type = "success") {
-  const toast = document.getElementById("toast");
-  if (!toast) return;
-
-  toast.textContent = message;
-  toast.className = `toast ${type} show`;
-
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2500);
-}
-
-// ===============================
-// DARK MODE TOGGLE + SAVING MODE
-// ===============================
-document.addEventListener("DOMContentLoaded", () => {
+// ============================================
+// THEME TOGGLE
+// ============================================
+function initTheme() {
   const toggle = document.getElementById("themeToggle");
-  if (!toggle) return;
-
-  // Load saved theme
   const saved = localStorage.getItem("theme");
+
   if (saved === "dark") {
     document.body.classList.add("dark");
     toggle.textContent = "☀️";
@@ -212,18 +143,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   toggle.addEventListener("click", () => {
     document.body.classList.toggle("dark");
-
-    if (document.body.classList.contains("dark")) {
-      toggle.textContent = "☀️";
-      localStorage.setItem("theme", "dark");
-    } else {
-      toggle.textContent = "🌙";
-      localStorage.setItem("theme", "light");
-    }
+    const mode = document.body.classList.contains("dark") ? "dark" : "light";
+    toggle.textContent = mode === "dark" ? "☀️" : "🌙";
+    localStorage.setItem("theme", mode);
   });
-});
+}
 
+// ============================================
+// TOAST
+// ============================================
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.innerText = msg;
+  t.classList.add("show");
 
+  setTimeout(() => {
+    t.classList.remove("show");
+  }, 2000);
+}
 
-
-
+// ============================================
+// HELPERS
+// ============================================
+function escapeHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
