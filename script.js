@@ -57,7 +57,7 @@ async function getClarity() {
   if (!textarea || !loader || !outputSection || !output) return;
 
   const message = textarea.value.trim();
-  if (!message) return alert("Please type what you're feeling first.");
+  if (!message) return showToast("Please type what you're feeling first", "error");
 
   loader.classList.remove("hidden");
   outputSection.classList.add("hidden");
@@ -195,5 +195,6 @@ function showToast(message, type = "success") {
     toast.classList.remove("show");
   }, 2500);
 }
+
 
 
