@@ -401,4 +401,65 @@ textarea:focus {
   display: none;
 }
 
+/* ===============================
+   DARK MODE
+   =============================== */
+body.dark {
+  background: #0f0f0f;
+  color: #f5f5f5;
+}
+
+/* Navbar */
+body.dark .navbar {
+  background: #1a1a1a;
+  border-bottom: 1px solid #333;
+}
+
+body.dark .nav-links a {
+  color: #ddd;
+}
+
+/* Cards / sections */
+body.dark .hero-card,
+body.dark .output-card,
+body.dark .history-item,
+body.dark .about-card {
+  background: #1b1b1b;
+  color: #eee;
+  border: 1px solid #333;
+}
+
+/* Textarea */
+body.dark textarea {
+  background: #181818;
+  color: #fff;
+  border: 1px solid #333;
+}
+
+/* Buttons */
+body.dark .primary-btn {
+  background: #2563eb;
+  color: #fff;
+}
+
+body.dark .secondary-btn {
+  background: #333;
+  color: #fff;
+  border-color: #444;
+}
+
+/* Theme toggle */
+.theme-toggle {
+  cursor: pointer;
+  font-size: 1.3rem;
+  margin-left: 20px;
+  user-select: none;
+}
+
+body.dark .theme-toggle {
+  color: #ffd700;
+}
+
+
+
 
