@@ -365,3 +365,40 @@ textarea:focus {
     justify-content: space-between;
   }
 }
+/* ===========================
+   TOAST NOTIFICATIONS
+   =========================== */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 14px 22px;
+  background: #222;
+  color: #fff;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  z-index: 1000;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.toast.error {
+  background: #d9534f;
+}
+
+.toast.success {
+  background: #28a745;
+}
+
+.toast.hidden {
+  display: none;
+}
+
+
