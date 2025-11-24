@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindSweep AI – Home</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="home">
+  <nav class="navbar">
+    <div class="logo">MindSweep <span>AI</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="history.html">History</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+  </nav>
+
+  <main class="main">
+    <section class="hero-card">
+      <h1>Feeling heavy in your mind?</h1>
+      <p class="subtitle">
+        Type what you're going through. MindSweep AI turns your messy thoughts into clear,
+        gentle steps – like talking to a supportive friend.
+      </p>
+
+      <div class="chips-row">
+        <button class="chip" data-prompt="I’m feeling low after a breakup.">💔 Breakup stress</button>
+        <button class="chip" data-prompt="There is so much family pressure and I feel stuck.">👪 Family pressure</button>
+        <button class="chip" data-prompt="I feel lost about my future and studies.">📚 Future & studies</button>
+        <button class="chip" data-prompt="Everything feels too much and I don’t know why.">😞 Overthinking</button>
+      </div>
+
+      <label for="userInput" class="field-label">What’s on your mind right now?</label>
+      <textarea
+        id="userInput"
+        rows="6"
+        placeholder="Example: I’m feeling stressed after a breakup and there is pressure from my family and studies..."
+      ></textarea>
+
+      <div class="actions-row">
+        <button class="secondary-btn" id="clearBtn">Clear</button>
+        <button class="primary-btn" id="clarityBtn">Get Clarity</button>
+      </div>
+
+      <p class="note">
+        🔒 Your text is used only to generate clarity for you in this demo.
+      </p>
+    </section>
+
+    <section id="loader" class="loader hidden">
+      <div class="spinner"></div>
+      <p>MindSweep is reading your feelings and preparing a gentle plan…</p>
+    </section>
+
+    <section id="outputSection" class="output-section hidden">
+      <h2>Your MindSweep Clarity</h2>
+      <p class="subtitle small">
+        Read slowly. You can save this internally, or just come back to History later.
+      </p>
+      <div id="output" class="output-card"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Built for Build & Blog Marathon 2025 · Powered by Google Cloud Run, Firestore & Gemini
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

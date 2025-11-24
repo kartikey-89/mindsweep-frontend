@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindSweep AI – History</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="history">
+  <nav class="navbar">
+    <div class="logo">MindSweep <span>AI</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="history.html" class="active">History</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+  </nav>
+
+  <main class="main">
+    <section class="hero-card">
+      <h1>Your Past MindSweeps</h1>
+      <p class="subtitle">
+        These are stored only in your browser (local history). You can clear them anytime.
+      </p>
+
+      <div class="history-header-row">
+        <button class="secondary-btn" id="clearHistoryBtn">Clear History</button>
+      </div>
+
+      <div id="historyList" class="history-container">
+        <!-- History items will be rendered here by script.js -->
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    MindSweep AI · Local demo history only – nothing synced to server yet.
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
