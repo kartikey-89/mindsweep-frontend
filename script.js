@@ -196,5 +196,34 @@ function showToast(message, type = "success") {
   }, 2500);
 }
 
+// ===============================
+// DARK MODE TOGGLE + SAVING MODE
+// ===============================
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.getElementById("themeToggle");
+  if (!toggle) return;
+
+  // Load saved theme
+  const saved = localStorage.getItem("theme");
+  if (saved === "dark") {
+    document.body.classList.add("dark");
+    toggle.textContent = "☀️";
+  }
+
+  toggle.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+
+    if (document.body.classList.contains("dark")) {
+      toggle.textContent = "☀️";
+      localStorage.setItem("theme", "dark");
+    } else {
+      toggle.textContent = "🌙";
+      localStorage.setItem("theme", "light");
+    }
+  });
+});
+
+
+
 
 
