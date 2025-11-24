@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (page === "home") {
     initHomePage();
   } else if (page === "history") {
-    initHistoryPage();
+    loadFirestoreHistory();
   } else if (page === "about") {
     // nothing special yet
   }
@@ -211,3 +211,63 @@ function escapeHtml(str) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 }
+
+async function loadFirestoreHistory() {
+  const list = document.getElementById("historyList");
+  if (!list) return;
+
+  list.innerHTML = `<p class="loading-text">Loading history…</p>`;
+
+  try {
+    const res = await fetch(`${API_BASE}/history`);
+    const data = await res.json();
+
+    if (!data.history || data.history.length === 0) {
+      list.innerHTML = `
+        <p style='font-size:0.9rem;color:#6b7280;'>
+          No history found. Try generating a MindSweep first.
+        </p>`;
+      return;
+    }
+
+    list.innerHTML = "";
+
+    data.history.forEach((item) => {
+      const div = document.createElement("div");
+      div.className = "history-item";
+
+      const date = new Date(item.timestamp);
+      const dateStr = date.toLocaleString(undefined, {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      div.innerHTML = `
+        <div class="history-item-header">
+          <span>${dateStr}</span>
+          <span class="history-item-tag">${item.model_used}</span>
+        </div>
+
+        <div class="history-item-message">
+          ${escapeHtml(item.message).slice(0, 200)}${
+        item.message.length > 200 ? "..." : ""
+      }
+        </div>
+
+        <div class="history-item-clarity">
+          ${escapeHtml(item.clarity).slice(0, 250)}...
+        </div>
+      `;
+
+      list.appendChild(div);
+    });
+  } catch (err) {
+    console.error(err);
+    list.innerHTML =
+      "<p style='color:red;font-size:0.9rem;'>Failed to fetch history. Try again.</p>";
+  }
+}
+
+
